@@ -1,0 +1,91 @@
+#!/usr/bin/perl
+#
+use strict;
+use warnings;
+
+sub do_bv {
+    my $config = shift;
+
+    # output the basic stuff
+    print(
+        "Exim version 4.63 #1 built 30-Oct-2007 07:21:13\n",
+        "Copyright (c) University of Cambridge 2006\n",
+"Berkeley DB: Sleepycat Software: Berkeley DB 4.2.52: (February 22, 2005)\n",
+"Support for: crypteq iconv() IPv6 PAM TCPwrappers OpenSSL Content_Scanning Old_Demime\n",
+"Lookups: lsearch wildlsearch nwildlsearch iplsearch cdb dbm dbmnz dnsdb dsearch ldap ldapdn ldapm mysql nis nis0 nisplus passwd pgsql sqlite\n",
+        "Authenticators: cram_md5 cyrus_sasl plaintext spa\n",
+"Routers: accept dnslookup ipliteral manualroute queryprogram redirect\n",
+"Transports: appendfile/maildir/mailstore/mbx autoreply lmtp pipe smtp\n",
+        "Fixed never_users: 0\n",
+        "Size of off_t: 4\n"
+    );
+    if ( $config && ( $config =~ /duff/ ) ) {
+        print(
+"2009-08-13 14:53:51 Exim configuration error in line 1 of $config:\n",
+            "  main option \"crap\" unknown\n"
+        );
+        exit(1);
+    }
+    else {
+        print( "Configuration file is ",
+            ( $config || '/etc/exim/exim.conf' ), "\n" );
+    }
+    exit(0);
+}
+
+sub do_bt;
+
+sub do_bt {
+    my $config = shift;
+    my $addr   = shift;
+
+    if ( $addr =~ /discard/ ) {
+        print "$addr is discarded\n";
+    }
+    elsif ( $addr =~ /undel/ ) {
+        print "$addr is undeliverable\n";
+    }
+    elsif ( $addr =~ /^multiple(\d+)\@(.*)/ ) {
+        foreach my $num ( 1 .. $1 ) {
+            do_bt( $config, sprintf( 'target%d@%s', $num, $2 ) );
+        }
+    }
+    elsif ( $addr =~ /(.*)\@local/ ) {
+        print "$addr -> $1\n";
+        print "  transport = local_delivery\n";
+    }
+    else {
+        print "$addr\n";
+        print "  router = smart_route, transport = remote_smtp\n";
+        print "  host 192.168.1.1 [192.168.1.1] \n";
+    }
+}
+
+# main
+{
+    my $config;
+    my $addr_mode;
+    foreach (@ARGV) {
+        if (/^-C(.*)/) {
+            $config = $1;
+        }
+        elsif (/^--/) {
+
+            # skip
+        }
+        elsif (/^-bV/) {
+            do_bv($config);
+        }
+        elsif (/^-bt/) {
+            $addr_mode++;
+        }
+        else {
+            if ($addr_mode) {
+                do_bt( $config, $_ );
+            }
+            else {
+                die "What do I do now???\n";
+            }
+        }
+    }
+}
