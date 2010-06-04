@@ -31,4 +31,4 @@ resources:
   MailingList: http://lists.exim.org/mailman/listinfo/exim-dev
   license: http://dev.perl.org/licenses/
   repository: http://github.com/nigelm/Test-MTA-Exim4/
-version: 0.02
+version: 0.03
