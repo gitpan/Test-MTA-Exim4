@@ -1,35 +1,63 @@
-# Automated tests always fail on Windows.  This magic should
-# prevent windows smoketesters attempting to run the distro
-# tests at all, and so stop it wasting everybodies time.
-# Windows fail is down to IPC::Cmd
-# However exim is not available on windows, so module does not
-# apply anyhow...
-exit 1 if ($^O eq 'MSWin32' && $ENV{AUTOMATED_TESTING} );
+use lib 'inc';
+use Devel::AssertOS qw[Unix];
 
-use inc::Module::Install;
+use strict;
+use warnings;
 
-name 'Test-MTA-Exim4';
-all_from 'lib/Test/MTA/Exim4.pm';
-author q{Nigel Metheringham <nigelm@cpan.org>};
-license 'perl';
+BEGIN { require 5.006; }
 
-build_requires 'Test::More';
-build_requires 'FindBin';
+use ExtUtils::MakeMaker 6.31;
 
-# basic requires set
-requires 'Class::Accessor::Fast' => 0;
-requires 'IPC::Cmd'              => 0;
-requires 'Test::Builder'         => 0;
 
-tests_recursive (qw|
-    t
-|);
 
-resources 'license'     => 'http://dev.perl.org/licenses/';
-resources 'repository'  => 'http://github.com/nigelm/Test-MTA-Exim4/';
-resources 'MailingList' => 'http://lists.exim.org/mailman/listinfo/exim-dev';
+my %WriteMakefileArgs = (
+  'ABSTRACT' => 'Test Anything interface for testing Exim4 configurations',
+  'AUTHOR' => 'Nigel Metheringham <nigelm@cpan.org>',
+  'BUILD_REQUIRES' => {
+    'Carp' => '0',
+    'English' => '0',
+    'File::Find' => '0',
+    'File::Temp' => '0',
+    'FindBin' => '0',
+    'Scalar::Util' => '0',
+    'Test::More' => '0.94'
+  },
+  'CONFIGURE_REQUIRES' => {
+    'ExtUtils::MakeMaker' => '6.31'
+  },
+  'DISTNAME' => 'Test-MTA-Exim4',
+  'EXE_FILES' => [],
+  'LICENSE' => 'perl',
+  'NAME' => 'Test::MTA::Exim4',
+  'PREREQ_PM' => {
+    'Class::Accessor::Fast' => '0',
+    'IPC::Cmd' => '0',
+    'Test::Builder' => '0'
+  },
+  'VERSION' => '0.04',
+  'test' => {
+    'TESTS' => 't/*.t'
+  }
+);
 
-auto_install;
 
-WriteAll;
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
+}
+
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
 

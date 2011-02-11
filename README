@@ -3,19 +3,19 @@ NAME
     configurations
 
 VERSION
-    Version 0.03
+    version 0.04
 
 SYNOPSIS
-    Test::MTA::Exim4 allows the testing of an `exim' installation and
+    Test::MTA::Exim4 allows the testing of an "exim" installation and
     configuration using the perl TAP (Test Anything Protocol) methodology.
 
     This allows the writing of some simple test scripts which can check for
-    features of `exim' and check that this configuration routes, accepts or
+    features of "exim" and check that this configuration routes, accepts or
     rejects mail as you would expect. As such it is an ideal system for
     creating a test suite for your mail configuration allowing you to check
     that there are no unexpected regressions when you make a change.
 
-    You need to be aware that an `exim' installation depends on more than
+    You need to be aware that an "exim" installation depends on more than
     just a config file - the exim binary, and the installation environment
     may effect the behaviour and/or routing of messages. You really need to
     do final configuration tests on the box that the system will be running
@@ -43,12 +43,12 @@ METHODS
     Resets the internal state. Not sure when this might be useful!
 
   config_ok
-    Checks that `exim' considers the configuration file as syntactically
-    valid. The config file must be specified when `new' is called, otherwise
+    Checks that "exim" considers the configuration file as syntactically
+    valid. The config file must be specified when "new" is called, otherwise
     the default is used.
 
   exim_version
-    Returns the version of `exim' seen when the configuration was checked.
+    Returns the version of "exim" seen when the configuration was checked.
     This is intended for use within your own tests for appropriate versions,
     for example:-
 
@@ -56,7 +56,7 @@ METHODS
         ok(($exim->exim_version gt '4.69'), 'Exim version check');
 
   exim_build
-    Returns the build number of `exim' seen when the configuration was
+    Returns the build number of "exim" seen when the configuration was
     checked. This is intended for use within your own tests for appropriate
     versions/builds.
 
@@ -64,21 +64,29 @@ METHODS
         $exim->has_capability($type, $what, $optional_msg)
         $exim->has_capability('lookup', 'lsearch', 'Has lsearch capability')
 
-    Checks that `exim' has the appropriate capability. This is taken from
-    the lists of capabilities listed by `exim -bV'
+    Checks that "exim" has the appropriate capability. This is taken from
+    the lists of capabilities listed by "exim -bV"
 
     The types of capability are:-
 
-    * support_for
-    * lookup
-    * authenticator
-    * router
-    * transport
+    *   support_for
+
+    *   lookup
+
+    *   authenticator
+
+    *   router
+
+    *   transport
 
     The items within a capability are processed to be lowercase alphanumeric
-    only - so `iconv' rather than `iconv()' as output by exim. The subitems
-    (for example `maildir' is a subitem of `appendfile') are treated as
+    only - so "iconv" rather than "iconv()" as output by exim. The subitems
+    (for example "maildir" is a subitem of "appendfile") are treated as
     separately checkable items.
+
+    If the version of "exim" being used has both built-in and dynamic
+    lookups (or potentially in later versions multiple types of other
+    capabilities), then these are merged into a single capability list.
 
   has_not_capability
     Precisely the opposite of has_capability with an opposite test - so
@@ -88,7 +96,7 @@ METHODS
         $exim->routes_ok($address, $optional_msg);
         $exim->routes_ok('address@example.com', 'Checking routing');
 
-    Checks that `exim' with this configuration can route to the address
+    Checks that "exim" with this configuration can route to the address
     given. Accepts any working address which may route to any number of
     final targets as long as there are no undeliverable addresses in the
     set.
@@ -98,7 +106,7 @@ METHODS
         $exim->routes_as_ok('address@example.com',
             {transport => 'local_smtp}, 'Checking routing');
 
-    Checks that `exim' with this configuration routes to the address given
+    Checks that "exim" with this configuration routes to the address given
     with the appropriate target results.
 
     The target is an arrayref of hashes (or as a special case a single
@@ -112,14 +120,14 @@ METHODS
         $exim->discards_ok($address, $optional_msg);
         $exim->discards_ok('discards@example.com', 'Checking discarding');
 
-    Checks that `exim' with this configuration will discard the given
+    Checks that "exim" with this configuration will discard the given
     address.
 
   undeliverable_ok
         $exim->undeliverable_ok($address, $optional_msg);
         $exim->undeliverable_ok('discards@example.com', 'Checking discarding');
 
-    Checks that `exim' with this configuration will consider the given
+    Checks that "exim" with this configuration will consider the given
     address to be undeliverable.
 
 INTERNAL METHODS
@@ -129,13 +137,13 @@ INTERNAL METHODS
     Runs an exim instance with the appropriate config file and
 
   _run_exim_bv
-    Runs `exim -bV' with the appropriate configuration file, to check that
+    Runs "exim -bV" with the appropriate configuration file, to check that
     the configuration file is valid. The output of the command is parsed and
     stashed and used to provide the functions to check versions numbers and
     capabilities.
 
   _run_exim_bt
-    Runs `exim -bt' (address test mode) with the appropriate configuration
+    Runs "exim -bt" (address test mode) with the appropriate configuration
     file, to check how the single address passed routes. The output of the
     command is parsed and passed back in the results.
 
@@ -144,81 +152,50 @@ INTERNAL METHODS
     undeliverable => # number of undeliverable addresses total => # total
     number of addresses addresses => {} }
 
-    The `addresses' part of the structure has one key for each resultant
+    The "addresses" part of the structure has one key for each resultant
     address, the value of which is another hash, which may contain the
     following items:-
 
-    * ok
+    *   ok
+
         True if the address routed OK, False otherwise.
 
-    * discarded
+    *   discarded
+
         True if the address was discarded by the router, false or missing if
         not.
 
-    * data
+    *   data
+
         Scalar of lines picked out of exim output related to this address
         and not otherwise recognised.
 
-    * router
+    *   router
+
         The router name used to handle this address.
 
-    * transport
+    *   transport
+
         The transport name used to handle this address.
 
-    * address
-        The final destination addresss.
+    *   address
 
-    * original
+        The final destination address.
+
+    *   original
+
         The original address that was used within this transformation. This
         is actually an arrayref each containing an address as several
         transformations may take place.
 
-    * target
+    *   target
+
         For a local transport, the delivery target.
 
   _diag
     Spits out some Test::Builder diagnostics for the last run command. Used
     internally by some tests on failure. The output data is the last error
     seen by IPC::Cmd and the complete output of the command.
-
-AUTHOR
-    Nigel Metheringham, `<nigelm at cpan.org>'
-
-BUGS
-    Please report any bugs or feature requests to `bug-test-mta-exim4 at
-    rt.cpan.org', or through the web interface at
-    http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Test-MTA-Exim4. I will be
-    notified, and then you'll automatically be notified of progress on your
-    bug as I make changes.
-
-SUPPORT
-    You can find documentation for this module with the perldoc command.
-
-        perldoc Test::MTA::Exim4
-
-  Warning
-        At this point the module is *not* released to CPAN - still in early
-        development and subject to change in a big way (including renaming,
-        or even just dropping it). However when/if it is released, further
-        information will be found at these locations
-
-    You can also look for information at:
-
-    * github - source control system (latest development version will always
-    be here)
-        http://github.com/nigelm/Test-MTA-Exim4/
-
-    * RT: CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-MTA-Exim4
-
-    * AnnoCPAN: Annotated CPAN documentation
-        http://annocpan.org/dist/Test-MTA-Exim4
-
-    * CPAN Ratings
-        http://cpanratings.perl.org/d/Test-MTA-Exim4
-
-    * Search CPAN
-        http://search.cpan.org/dist/Test-MTA-Exim4/
 
 ACKNOWLEDGEMENTS
     The module draws very strongly on the Test::Exim4::Routing module by Max
@@ -227,12 +204,36 @@ ACKNOWLEDGEMENTS
     were made as a new module in a name space that is intended for use by
     similar modules for other MTAs.
 
-COPYRIGHT & LICENSE
-    Copyright 2009-2010 Nigel Metheringham.
+INSTALLATION
+    See perlmodinstall for information and options on installing Perl
+    modules.
 
-    This program is free software; you can redistribute it and/or modify it
-    under the terms of either: the GNU General Public License as published
-    by the Free Software Foundation; or the Artistic License.
+BUGS AND LIMITATIONS
+    No bugs have been reported.
 
-    See http://dev.perl.org/licenses/ for more information.
+    Please report any bugs or feature requests through the web interface at
+    <http://rt.cpan.org/Public/Dist/Display.html?Name=Test-MTA-Exim4>.
+
+AVAILABILITY
+    The project homepage is <http://search.cpan.org/dist/Test-MTA-Exim4>.
+
+    The latest version of this module is available from the Comprehensive
+    Perl Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a
+    CPAN site near you, or see
+    <http://search.cpan.org/dist/Test-MTA-Exim4/>.
+
+    The development version lives at
+    <http://github.com/nigelm/Test-MTA-Exim4> and may be cloned from
+    <git://github.com/nigelm/Test-MTA-Exim4.git>. Instead of sending
+    patches, please fork this project using the standard git and github
+    infrastructure.
+
+AUTHOR
+    Nigel Metheringham <nigelm@cpan.org>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2011 by Nigel Metheringham.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
 
